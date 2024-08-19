@@ -2,75 +2,37 @@ const { ComponentType, GuildScheduledEventManager, StringSelectMenuBuilder, Stri
 const dayjs = require('dayjs')
 require('dayjs/locale/fr')
 dayjs.locale('fr')
-
+const aperoLocation = require('../helper/apero_location');
+const aperoConfirmation = require('../helper/apero_confirmation');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('apero')
 		.setDescription('Permet de setup un apero pour le vendredi qui arrive'),
 	async execute(interaction) {
-
-		// Setup the location selector for the discord message
-		const selectLocation = new StringSelectMenuBuilder()
-			.setCustomId('location')
-			.setPlaceholder('Chez qui ?')
-			.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel('Latge')
-					.setDescription('Le financier')
-					.setValue('latge'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('Lucas')
-					.setDescription('Le techos')
-					.setValue('lucas'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('Anthony')
-					.setDescription("L'ingenieur")
-					.setValue('anthony'),
-				new StringSelectMenuOptionBuilder()
-					.setLabel('Restorant')
-					.setDescription("Il est bon j'espere")
-					.setValue('restorant'),
-			);
-		const locationSlectorRow = new ActionRowBuilder()
-			.addComponents([selectLocation]);
-
-
 		// Get the next friday
 		// TODO check after friday to pick the next friday of the next week
 		const aperoDateObject = dayjs().startOf('week').add(4, 'day').add(20, 'hour');
 
-		// Setup the button layout for the discord message
-		const confirm = new ButtonBuilder()
-			.setCustomId('confirm')
-			.setLabel('Apero !')
-			.setStyle(ButtonStyle.Success);
-		const deny = new ButtonBuilder()
-			.setCustomId('deny')
-			.setLabel('Pas la')
-			.setStyle(ButtonStyle.Danger);
-		const buttonRow = new ActionRowBuilder()
-			.addComponents([confirm, deny]);
-
-		
-		const response = await interaction.reply({
-			content: "Es tu dispo ce " + aperoDateObject.format("dddd DD MMMM") + " a " + aperoDateObject.format("HH:mm") + " ?",
-			components: [buttonRow]
-		});
-
-		const collectorFilter = i => i.type === 3;
+		const locationResponse = await aperoLocation.setupLocation(interaction, aperoDateObject);
+		let locationResult = "";
 		try {
+			const location = await locationResponse.awaitMessageComponent({ time: 60_000 });
+			locationResult = location.values[0];
+
+			const confirmationResponse = await aperoConfirmation.setupConfirmation(location, aperoDateObject, locationResult);
 			// Event manager to get the response from the user after the button click
-			const collector = response.createMessageComponentCollector({ componentType: ComponentType.ButtonBuilder, time: 3_600_000 });
+			const collector = confirmationResponse.createMessageComponentCollector({ time: 3_600_000 });
 			collector.on('collect', async i => {
 				const selection = i.customId;
 				if (selection === "confirm") {
-					await i.reply(`${i.user.username} vient pour l'apero !`);
+					await i.reply({ content: `${i.user.username} vient pour l'apero !`, ephemeral: true });
 				} else if (selection === "deny") {
-					await i.reply(`${i.user.username} ne vient pas pour l'apero !`);
+					await i.reply({ content: `${i.user.username} ne vient pas pour l'apero !`, ephemeral: true });
 				}
 			});
 		} catch (e) {
+			console.log(e);
 			await interaction.editReply({ content: 'Confirmation not received within 1 minute, cancelling', components: [] });
 		}
 	},
