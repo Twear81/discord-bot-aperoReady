@@ -3,17 +3,35 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup src/index.ts --minify"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "dayjs": "^1.11.12",
-    "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5"
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "eslint": "^9.9.0"
+    "@discordjs/rest": "^2.4.3",
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.13.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/ws": "^8.5.14",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "discord-api-types": "^0.37.119",
+    "eslint": "^9.20.1",
+    "globals": "^15.15.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
   }
 }

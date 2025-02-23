@@ -1,9 +1,10 @@
-const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
-const dayjs = require('dayjs')
+import { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ChatInputCommandInteraction, InteractionCallbackResponse, Message, InteractionResponse } from 'discord.js';
+import dayjs from 'dayjs';
 require('dayjs/locale/fr')
 dayjs.locale('fr')
 
-const setupLocation = async function (interaction, dateObject) {
+
+export const setupLocation = async (interaction: ChatInputCommandInteraction, dateObject: dayjs.Dayjs) => {
     // Setup the location selector for the discord message
     const selectLocation = new StringSelectMenuBuilder()
         .setCustomId('location')
@@ -26,15 +27,11 @@ const setupLocation = async function (interaction, dateObject) {
                 .setDescription("Il est bon j'espere")
                 .setValue('restorant'),
         );
-    const locationSlectorRow = new ActionRowBuilder()
-        .addComponents([selectLocation]);
+    const locationSlectorRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(selectLocation);
 
-    return response = await interaction.reply({
+    return await interaction.reply({
         content: "Ou mange/bois t'on le " + dateObject.format("dddd DD MMMM") + " a " + dateObject.format("HH:mm") + " ?",
         components: [locationSlectorRow]
     });
 }
-
-
-
-module.exports = { setupLocation, ...module.exports }
